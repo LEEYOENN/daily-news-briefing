@@ -84,7 +84,7 @@ uvicorn backend.main:app --reload
 
 ## AI 도구 사용
 
-- **Claude (claude.ai)** — 시스템 설계, 코드 전체 작성에 활용
+- **Claude (claude.ai)** — 시스템 설계, 코드 작성에 활용
 - 개발 플로우: 요구사항 분석 → 아키텍처 설계 → 백엔드 코드 생성 → 프론트엔드 코드 생성 → README 작성
 
 ## 구현 조건 충족 여부
