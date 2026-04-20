@@ -7,7 +7,7 @@ from backend.database import get_unanalyzed_articles, update_article_analysis, s
 load_dotenv()
 
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+MODEL = os.getenv("OPENAI_MODEL", "gpt-5-mini")
 
 CATEGORIES = ["정치", "경제", "기술", "사회", "국제", "문화", "스포츠", "일반"]
 SENTIMENTS = ["positive", "negative", "neutral"]
@@ -33,7 +33,7 @@ async def analyze_article(article: dict) -> dict:
         response = await client.chat.completions.create(
             model=MODEL,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=300,
+            max_completion_tokens=300,
             temperature=0.3,
             response_format={"type": "json_object"}
         )
@@ -102,7 +102,7 @@ async def generate_daily_briefing() -> str:
         response = await client.chat.completions.create(
             model=MODEL,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=1000,
+            max_completion_tokens=1000,
             temperature=0.5
         )
         briefing = response.choices[0].message.content

@@ -7,13 +7,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
-NEWS_API_URL = "https://newsapi.org/v2/top-headlines"
+NEWS_API_URL = "https://newsapi.org/v2/everything"
 
 # RSS 피드 목록
 RSS_FEEDS = [
     {"url": "https://feeds.bbci.co.uk/news/world/rss.xml", "source": "BBC", "category": "국제"},
-    {"url": "https://rss.cnn.com/rss/edition.rss", "source": "CNN", "category": "국제"},
-    {"url": "https://www.yonhapnewstv.co.kr/category/news/rss", "source": "연합뉴스TV", "category": "국내"},
+    {"url": "http://rss.cnn.com/rss/edition.rss", "source": "CNN", "category": "국제"},
+    {"url": "https://www.yna.co.kr/rss/news.xml", "source": "연합뉴스TV", "category": "국내"},
 ]
 
 # NewsAPI 검색 키워드/카테고리
@@ -31,7 +31,9 @@ async def fetch_newsapi(query: str, category: str) -> list[dict]:
         print("[collector] NEWS_API_KEY 없음, NewsAPI 스킵")
         return articles
     try:
-        async with httpx.AsyncClient(timeout=15) as client:
+        # 브라우저 User-Agent 추가
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+        async with httpx.AsyncClient(timeout=15, headers=headers) as client:
             resp = await client.get(NEWS_API_URL, params={
                 "q": query,
                 "apiKey": NEWS_API_KEY,
@@ -39,7 +41,9 @@ async def fetch_newsapi(query: str, category: str) -> list[dict]:
                 "pageSize": 10,
                 "sortBy": "publishedAt"
             })
+            resp.raise_for_status() # HTTP 4xx, 5xx 에러 발생 시 예외 처리로 넘김
             data = resp.json()
+            
             for item in data.get("articles", []):
                 if not item.get("url") or not item.get("title"):
                     continue
@@ -54,14 +58,22 @@ async def fetch_newsapi(query: str, category: str) -> list[dict]:
                     "published_at": item.get("publishedAt", "")
                 })
     except Exception as e:
-        print(f"[collector] NewsAPI 오류 ({query}): {e}")
+        # 에러를 더 자세히 보기 위해 repr(e) 사용
+        print(f"[collector] NewsAPI 오류 ({query}): {repr(e)}")
     return articles
 
 async def fetch_rss(feed_url: str, source: str, category: str) -> list[dict]:
     articles = []
     try:
-        async with httpx.AsyncClient(timeout=15) as client:
+        # 봇 차단을 피하기 위해 User-Agent 필수 추가
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/rss+xml, application/rdf+xml, application/atom+xml, application/xml, text/xml, text/html"
+        }
+        async with httpx.AsyncClient(timeout=15, headers=headers) as client:
             resp = await client.get(feed_url, follow_redirects=True)
+            resp.raise_for_status() # 차단(403 등)당했을 때 에러를 바로 캐치
+            
             feed = feedparser.parse(resp.text)
             for entry in feed.entries[:10]:
                 url = entry.get("link", "")
@@ -83,7 +95,7 @@ async def fetch_rss(feed_url: str, source: str, category: str) -> list[dict]:
                     "published_at": published
                 })
     except Exception as e:
-        print(f"[collector] RSS 오류 ({source}): {e}")
+        print(f"[collector] RSS 오류 ({source}): {repr(e)}") # 에러 객체의 상세 타입 출력
     return articles
 
 async def collect_all_news() -> list[dict]:
