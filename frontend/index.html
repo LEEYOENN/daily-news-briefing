@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily News Briefing</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="layout">
+
+    <!-- ── 사이드바 ── -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">📰</span>
+        <div>
+          <div class="logo-title">Daily News</div>
+          <div class="logo-sub">Briefing System</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" onclick="setTab('dashboard')">대시보드</button>
+        <button class="nav-item" onclick="setTab('briefing')">AI 브리핑</button>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">카테고리</div>
+        <button class="cat-btn active" onclick="filterCategory('전체')">전체</button>
+        <button class="cat-btn" onclick="filterCategory('정치')">🏛 정치</button>
+        <button class="cat-btn" onclick="filterCategory('경제')">💹 경제</button>
+        <button class="cat-btn" onclick="filterCategory('기술')">💻 기술</button>
+        <button class="cat-btn" onclick="filterCategory('사회')">🌍 사회</button>
+        <button class="cat-btn" onclick="filterCategory('국제')">🌐 국제</button>
+        <button class="cat-btn" onclick="filterCategory('일반')">📋 일반</button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">수동 제어</div>
+        <button class="action-btn" onclick="triggerCollect()" id="btn-collect">🔄 지금 수집</button>
+        <button class="action-btn" onclick="triggerAnalyze()" id="btn-analyze">🤖 분석 실행</button>
+      </div>
+
+      <div class="stats-box" id="stats-box">
+        <div class="stat-row"><span>전체 기사</span><span id="stat-total">-</span></div>
+        <div class="stat-row"><span>분석 완료</span><span id="stat-analyzed">-</span></div>
+      </div>
+    </aside>
+
+    <!-- ── 메인 콘텐츠 ── -->
+    <main class="main">
+
+      <!-- 대시보드 탭 -->
+      <div id="tab-dashboard">
+        <div class="topbar">
+          <div>
+            <h1 class="page-title">오늘의 뉴스</h1>
+            <div class="page-sub" id="last-updated">불러오는 중...</div>
+          </div>
+          <div class="search-wrap">
+            <input class="search-input" type="text" placeholder="키워드 검색..." id="search-input" oninput="debounceSearch()">
+          </div>
+        </div>
+
+        <!-- 감성 요약 바 -->
+        <div class="sentiment-bar-wrap">
+          <div class="sentiment-bar" id="sentiment-bar">
+            <div class="sent-seg positive" id="sent-positive" style="width:33%">긍정</div>
+            <div class="sent-seg neutral" id="sent-neutral" style="width:34%">중립</div>
+            <div class="sent-seg negative" id="sent-negative" style="width:33%">부정</div>
+          </div>
+          <div class="sentiment-legend">
+            <span class="legend-dot positive"></span>긍정
+            <span class="legend-dot neutral"></span>중립
+            <span class="legend-dot negative"></span>부정
+          </div>
+        </div>
+
+        <!-- 뉴스 카드 그리드 -->
+        <div class="news-grid" id="news-grid">
+          <div class="loading">뉴스를 불러오는 중...</div>
+        </div>
+      </div>
+
+      <!-- 브리핑 탭 -->
+      <div id="tab-briefing" style="display:none">
+        <div class="topbar">
+          <div>
+            <h1 class="page-title">AI 데일리 브리핑</h1>
+            <div class="page-sub" id="briefing-time">-</div>
+          </div>
+          <button class="generate-btn" onclick="generateBriefing()" id="btn-briefing">
+            ✨ 브리핑 생성
+          </button>
+        </div>
+        <div class="briefing-box" id="briefing-content">
+          <div class="briefing-empty">
+            브리핑 생성 버튼을 눌러 AI가 오늘의 핵심 이슈를 정리해드립니다.
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
